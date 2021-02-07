@@ -1,0 +1,19 @@
+{
+  "name": "youtubetools",
+  "version": "1.0.0",
+  "description": "A collection of node.js scripts that gather youtube data using the youtube v3 API.",
+  "main": "channel.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Ken Ingram <ken.ingram@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.21.0",
+    "dotenv": "^8.2.0",
+    "googleapis": "^66.0.0",
+    "mysql": "^2.18.1",
+    "mysql2": "^2.2.5"
+  }
+}
