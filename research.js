@@ -22,8 +22,14 @@ const DATABASE = {
 
 // let yourmom = require('./yourmom')
 
-const search_term = process.argv[3]
 const flag = process.argv[2]
+const search_term = process.argv[3]
+const num_pages = (process.argv[4]) ? process.argv[4] : 1
+
+function printObj(input) {
+  return JSON.stringify(input, null, 2)
+}
+
 
 function formatDuration(input){
   /**
@@ -45,7 +51,7 @@ function formatDuration(input){
 }
 
 
-function setURL(type, videoid=null, channelid=null) {
+function setURL(type, videoid=null, channelid=null, nextpage=null) {
   const API_KEY = process.env.API_KEY1
   const url_base="https://www.googleapis.com/youtube/v3/"
   const url_api_key = `key=${API_KEY}`
@@ -53,9 +59,12 @@ function setURL(type, videoid=null, channelid=null) {
   if (type === 'channel') {
     return `${url_base}channels?part=snippet&channel&id=${channelid}&${url_api_key}`
   } else if (type === 'video') {
+    // console.log(videoid)
     return `${url_base}videos?part=contentDetails,snippet&id=${videoid}&${url_api_key}`
   } else if (type === 'uploads') {
     return `${url_base}search?part=snippet&channelId=${channelid}&maxResults=50&order=date&${url_api_key}`
+  } else if (type === 'nextpage') {
+    return `${url_base}search?part=snippet&channelId=${channelid}&maxResults=50&order=date&pageToken=${nextpage}&${url_api_key}`
   }
 }
 
@@ -78,7 +87,7 @@ async function getChannelID(channelname) {
 
 async function getChannelInfo(channel, channel_dbid) {
   const channelData = []
-  const url = setURL('channel', null, channel)
+  const url = setURL('channel', null, channel, null)
   const response = await axios.get(url)
   // console.log(JSON.stringify(response.data, null, 2))
   response.data.items.forEach((item) => {
@@ -94,13 +103,29 @@ async function getChannelInfo(channel, channel_dbid) {
   return channelData
 }
 
-async function getChannelUploadsList(channel, channel_dbid) {
+async function getChannelUploadsList(channel, channel_dbid, pages=null) {
+  let maxpages
+  let i = 1
+  let url = setURL('uploads', null, channel, null)
   const videoList = []
   const playLists = []
-  const url = setURL('uploads', null, channel)
   console.log(url, "\n")
+  pages = (pages === '*') ? pages : parseInt(pages)
   const response = await axios.get(url)
-    
+  /**
+   * If a channel has a lot of uploads, there will be a lot of pages
+   * returned in this API call. We want to have the option is seeing farther back
+   * in the channel history, or limit the view to more recent uploads so
+   * this section needs a while loop to make a new call to the subsequent pages
+   * 
+   */
+
+  if (pages === '*') {
+    maxpages = Math.ceil(response.data.pageInfo.totalResults/50)  
+  } else {
+    maxpages = pages
+  }
+
   response.data.items.forEach((item) => {
     if (Object.keys(item.id).includes('videoId')){
       videoList.push({
@@ -114,9 +139,30 @@ async function getChannelUploadsList(channel, channel_dbid) {
     if (Object.keys(item.id).includes('publishedAt')){
       playLists.push()
     }
-
   })
 
+  while (response.data.nextPageToken && (i < maxpages)) {
+    url = setURL('nextpage', null, null, response.data.nextPageToken)
+    console.log(`(Line 144): ${url}`)
+    // response = await axios.get(url)
+    // response.data.items.forEach((item) => {
+    //   if (Object.keys(item.id).includes('videoId')){
+    //     videoList.push({
+    //       videoid: item.id.videoId,
+    //       title: item.snippet.title,
+    //       published: item.snippet.publishedAt,
+    //       channel_owner: channel_dbid
+    //     })
+    //   }      
+
+    //   if (Object.keys(item.id).includes('publishedAt')){
+    //     playLists.push()
+    //   }
+    // }) 
+    i++    
+  }
+
+  // console.log(`(Line 151): ${printObj(playLists)}`)
   videoList.sort((a, b) =>  (a.published > b.published) ? 1 : -1 )
   // console.log(videoList)
   return videoList
@@ -143,13 +189,16 @@ async function retrieveData(data) {
   const videoDataURL = 'videos?part=snippet%2CcontentDetails%2Cstatistics'
   let record = {}
   const objectList = []
+  
   for (let i = 0; i < data.length; i++) {
     try {
-      let url = setURL('video', data[i].videoid, null)
+      let url = setURL('video', data[i].videoid, null, null)
       let response = await axios.get(url)
       // console.log(response.data.items[0].snippet.title, x.channel_owner, response.data.items[0].contentDetails.duration)
+      // let tags = (response.data.items[0].snippet.tags) ? response.data.items[0].snippet.tags : null
+
       record = {
-        tags: response.data.items[0].snippet.tags,
+        tags: null,
         published: new Date(response.data.items[0].snippet.publishedAt).toLocaleString().replace(',',''),
         title: response.data.items[0].snippet.title,
         description: response.data.items[0].snippet.description,
@@ -211,7 +260,7 @@ async function addData(data) {
     SQL = `INSERT INTO youtube_downloads (${columns}) VALUES (?,date_format(str_to_date(?,'%m/%d/%Y %r'), '%Y-%m-%d %r'),?,?,?,?,?,?,?)`
     connection.query(SQL, values, function(error, results, fields) {
       if (error) throw error
-      console.log(`New Row Objid: ${results.insertId} ${data.title}`)
+      console.log(`(Line 218): New Row Objid: ${results.insertId} ${data.title}`)
     })
 
     connection.end()
@@ -240,10 +289,13 @@ async function dataCheck(data) {
     return `'${x.videoid}'`
   }).join(",")
 
-  SQL = `select videoid FROM youtube_downloads WHERE videoid IN (${videos})`
+  // console.log(`(Line 247): ${videos}`)
 
+  SQL = `select videoid FROM youtube_downloads WHERE videoid IN (${videos})`
+  // console.log(`Line 250: ${SQL}`)
   try {
     results = await connection.promise().query(SQL)
+
     // results[0].forEach((x) => {
     //   // console.log(`https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id=${x.videoid}&key=${API_KEY}`)
     // })
@@ -253,12 +305,24 @@ async function dataCheck(data) {
     connection.end()
   }
 
+  // console.log(`\nLine 263: ${results[0].length}\n`)
+
   if (results[0].length === 0) {
-    data.forEach(x => leftovers.push(x.videoid))
-  } else if (results[0].length > 0 && results[0].length < videos.length) {
+    /** Edit note 2021 02 10 1124
+     * This branch was producing an array of 'videoid' strings when all of 
+     * the checked values were not in the database. This was causing the 
+     * addData() to break because it expects the array elements to be objects 
+     * and not string values.
+     * */ 
+    data.forEach((x) => {
+      leftovers.push(x)
+    })
+  } else if (results[0].length > 0 && results[0].length <= videos.length) {
     test = results[0].map((x) => {
       return `'${x.videoid}'`
     }).join(",")
+
+    // console.log(`(Line 280): ${JSON.stringify(test, null, 2)}`)
 
     data.forEach((x) => {
       if (!(test.includes(x.videoid))) {
@@ -268,40 +332,30 @@ async function dataCheck(data) {
     })
   }
 
+  // console.log(`(Line 290): ${JSON.stringify(leftovers, null, 2)}`)
   return leftovers
 }
 
 async function updateChannel() {
   const result = await getChannelID(search_term)
   const channelData = await getChannelInfo(result[0].channel_id, result[0].objid)
-  // console.log(channelData)
-  const videoData = await getChannelUploadsList(result[0].channel_id, result[0].objid)
-  // console.log(videoData)
-
+  const videoData = await getChannelUploadsList(result[0].channel_id, result[0].objid, num_pages)
   
-  // yourmom.forEach((x) => {
-  //   console.log(`[${x.videoid}] ${x.title} (${x.published})`)
-  // })
-
-  // videoData.forEach((x) => {
-  //   console.log(`${result[0].objid} -- [${x.videoid}] ${x.title} (${x.published})`)
-  // })
+  // console.log(`(Line 299): ${JSON.stringify(videoData, null, 2)}`)
+  videoData.forEach((x) => {
+    let date = new Date(x.published).toLocaleString().replace(",","")
+    console.log(`(Line 302):${x.channel_owner} -- (${date}) [${x.videoid}] ${x.title}`)
+  })
 
   // Pass the array of objects into the check function 
   let test = await dataCheck(videoData)
   // console.log(test)
-  
   const finalresult = await retrieveData(test)
-  // console.log(finalresult)
 
-  finalresult.forEach((x) => {
-    addData(x)
-  })
-  
-  // if (flag === 's'){
-    
-  // }
-
+  console.log('\n')
+  // finalresult.forEach((x) => {
+  //   addData(x)
+  // })
 }
 
 updateChannel()
