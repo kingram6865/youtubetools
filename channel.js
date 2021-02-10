@@ -1,8 +1,8 @@
+require('dotenv').config()
 const axios = require('axios')
 const mysql = require('mysql')
 const channeluser = (process.argv[2]) ? process.argv[2] : null
 const quantity = (process.argv[3]) ? process.argv[3] : null
-require(dotenv).config()
 
 
 const API_KEY = process.env.API_KEY1
