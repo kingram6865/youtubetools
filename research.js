@@ -107,11 +107,11 @@ async function getChannelUploadsList(channel, channel_dbid, pages=null) {
   let maxpages
   let i = 1
   let url = setURL('uploads', null, channel, null)
+  let response = await axios.get(url)
   const videoList = []
   const playLists = []
   console.log(url, "\n")
   pages = (pages === '*') ? pages : parseInt(pages)
-  const response = await axios.get(url)
   /**
    * If a channel has a lot of uploads, there will be a lot of pages
    * returned in this API call. We want to have the option is seeing farther back
@@ -142,23 +142,23 @@ async function getChannelUploadsList(channel, channel_dbid, pages=null) {
   })
 
   while (response.data.nextPageToken && (i < maxpages)) {
-    url = setURL('nextpage', null, null, response.data.nextPageToken)
+    url = setURL('nextpage', null, channel, response.data.nextPageToken)
     console.log(`(Line 144): ${url}`)
-    // response = await axios.get(url)
-    // response.data.items.forEach((item) => {
-    //   if (Object.keys(item.id).includes('videoId')){
-    //     videoList.push({
-    //       videoid: item.id.videoId,
-    //       title: item.snippet.title,
-    //       published: item.snippet.publishedAt,
-    //       channel_owner: channel_dbid
-    //     })
-    //   }      
+    response = await axios.get(url)
+    response.data.items.forEach((item) => {
+      if (Object.keys(item.id).includes('videoId')){
+        videoList.push({
+          videoid: item.id.videoId,
+          title: item.snippet.title,
+          published: item.snippet.publishedAt,
+          channel_owner: channel_dbid
+        })
+      }      
 
-    //   if (Object.keys(item.id).includes('publishedAt')){
-    //     playLists.push()
-    //   }
-    // }) 
+      if (Object.keys(item.id).includes('publishedAt')){
+        playLists.push()
+      }
+    }) 
     i++    
   }
 
@@ -353,9 +353,9 @@ async function updateChannel() {
   const finalresult = await retrieveData(test)
 
   console.log('\n')
-  // finalresult.forEach((x) => {
-  //   addData(x)
-  // })
+  finalresult.forEach((x) => {
+    addData(x)
+  })
 }
 
 updateChannel()
