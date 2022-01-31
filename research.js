@@ -1,5 +1,5 @@
 /**
- * Author: Ken Inngram
+ * Author: Ken Ingram
  * Date: 2021 02 04 1000
  * Purpose: Update youtube link database according to already saved channels
  * 
@@ -50,7 +50,6 @@ function formatDuration(input){
 
   return timeinfo.join("");
 }
-
 
 function setURL(type, videoid=null, channelid=null, nextpage=null) {
   const API_KEY = process.env.API_KEY1
@@ -110,7 +109,7 @@ async function getChannelUploadsList(channel, channel_dbid, pages=null) {
   let response = await axios.get(url)
   const videoList = []
   const playLists = []
-  console.log(`(Line 112): ${url}\n`)
+  //console.log(`(Line 112): ${url}\n`)
   pages = (pages === '*') ? pages : parseInt(pages)
   /**
    * If a channel has a lot of uploads, there will be a lot of pages
@@ -258,7 +257,7 @@ async function addData(data) {
     SQL = `INSERT INTO youtube_downloads (${columns}) VALUES (?,date_format(str_to_date(?,'%m/%d/%Y %r'), '%Y-%m-%d %r'),?,?,?,?,?,?,?)`
     connection.query(SQL, values, function(error, results, fields) {
       if (error) throw error
-      console.log(`(Line 260): New Row Objid: ${results.insertId} ${data.title} [${data.published}]`)
+      console.log(`(Line 260): /${values[7]}/ New Row Objid: ${results.insertId} ${data.title} [${data.published}] ${data.duration}`)
     })
 
     connection.end()
@@ -336,13 +335,16 @@ async function dataCheck(data) {
 
 async function updateChannel() {
   const result = await getChannelID(search_term)
+  result.forEach(x => {
+    console.log(x.owner_name, x.channel_id)
+  })
   const channelData = await getChannelInfo(result[0].channel_id, result[0].objid)
   const videoData = await getChannelUploadsList(result[0].channel_id, result[0].objid, num_pages)
   
   // console.log(`(Line 241): ${JSON.stringify(videoData, null, 2)}`)
   videoData.forEach((x) => {
     let date = new Date(x.published).toLocaleString().replace(",","")
-    console.log(`(Line 344):${x.channel_owner} -- (${date}) [${x.videoid}] ${x.title}`)
+    //console.log(`(Line 344):${x.channel_owner} -- (${date}) [${x.videoid}] ${x.title}`)
   })
 
   // Pass the array of objects into the check function 
