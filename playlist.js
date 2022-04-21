@@ -6,7 +6,7 @@ const fs = require('fs')
 
 const playlistid = (process.argv[2]) ? process.argv[2] : null
 const url_base="https://www.googleapis.com/youtube/v3/"
-const url_resource_params="playlistItems?part=contentDetails&part=snippet&maxResults=50"
+const url_resource_params="playlistItems?part=contentDetails,id,snippet,status&part=snippet&maxResults=50"
 const playlist = []
 
 async function retrievePlaylistItems() {
@@ -14,14 +14,23 @@ async function retrievePlaylistItems() {
     let i = 0
     let url=`${url_base}${url_resource_params}&playlistId=${playlistid}&key=${process.env.API_KEY2}`
     let response = await axios.get(url)
-    playlist.push(response.data)
-
+    playlist.push(...response.data.items)
+    // playlist = [...playlist, response.data]
+    
     while(response.data.nextPageToken && i <= response.data.pageInfo.totalResults ){
       url = `${url_base}${url_resource_params}&playlistId=${playlistid}&pageToken=${response.data.nextPageToken}&key=${process.env.API_KEY2}`
       response = await axios.get(url)
-      playlist.push(response.data)
+      playlist.push(...response.data.items)
+      // playlist = [...playlist, response.data]
     }
-    console.log(JSON.stringify(playlist,null,2))
+
+    playlist.forEach((record, index) => {
+      // let item = JSON.stringify(record)
+      // console.log(item)
+      console.log(index, record.contentDetails.videoId, record.snippet.publishedAt, record.snippet.title)
+    })
+    // console.log(JSON.stringify(playlist,null,2))
+    
     console.log(`Number of Playlist items ${playlist.length}`)
   } else {
     console.log("No playlist id given!")
