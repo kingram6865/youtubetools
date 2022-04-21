@@ -57,7 +57,7 @@ function setURL(type, videoid=null, channelid=null, nextpage=null) {
   const url_api_key = `key=${API_KEY}`
 
   if (type === 'channel') {
-    return `${url_base}channels?part=snippet&channel&id=${channelid}&${url_api_key}`
+    return `${url_base}channels?part=snippet,contentDetails&channel&id=${channelid}&${url_api_key}`
   } else if (type === 'video') {
     return `${url_base}videos?part=contentDetails,snippet&id=${videoid}&${url_api_key}`
   } else if (type === 'uploads') {
@@ -89,6 +89,7 @@ async function getChannelInfo(channel, channel_dbid) {
   const url = setURL('channel', null, channel, null)
   const response = await axios.get(url)
 
+  // console.log(response.data, url)
   response.data.items.forEach((item) => {
     channelData.push({
       channel_owner: channel_dbid,
@@ -106,6 +107,7 @@ async function getChannelUploadsList(channel, channel_dbid, pages=null) {
   let maxpages
   let i = 1
   let url = setURL('uploads', null, channel, null)
+  // console.log(`[Line 110] ${url}`)
   let response = await axios.get(url)
   const videoList = []
   const playLists = []
@@ -125,6 +127,7 @@ async function getChannelUploadsList(channel, channel_dbid, pages=null) {
     maxpages = pages
   }
 
+  // console.log(`[Line 130] pages: ${pages} maxPages: ${maxpages} ${response.data.pageInfo.totalResults} ${response.data.pageInfo.totalResults/50}`)
   response.data.items.forEach((item) => {
     if (Object.keys(item.id).includes('videoId')){
       videoList.push({
@@ -142,7 +145,7 @@ async function getChannelUploadsList(channel, channel_dbid, pages=null) {
 
   while (response.data.nextPageToken && (i < maxpages)) {
     url = setURL('nextpage', null, channel, response.data.nextPageToken)
-    console.log(`(Line 145): ${url}`)
+    // console.log(`(Line 145): ${url}`)
     response = await axios.get(url)
     response.data.items.forEach((item) => {
       if (Object.keys(item.id).includes('videoId')){
@@ -256,7 +259,9 @@ async function addData(data) {
 
     SQL = `INSERT INTO youtube_downloads (${columns}) VALUES (?,date_format(str_to_date(?,'%m/%d/%Y %r'), '%Y-%m-%d %r'),?,?,?,?,?,?,?)`
     connection.query(SQL, values, function(error, results, fields) {
-      if (error) throw error
+      if (error) {
+        console.log(error)
+      }
       console.log(`(Line 260): /${values[7]}/ New Row Objid: ${results.insertId} ${data.title} [${data.published}] ${data.duration}`)
     })
 
