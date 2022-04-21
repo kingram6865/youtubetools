@@ -8,7 +8,8 @@ const quantity = (process.argv[3]) ? process.argv[3] : null
 const API_KEY = process.env.API_KEY1
 const url_base="https://www.googleapis.com/youtube/v3/"
 const url_resource_params = `channels?part=contentDetails,snippet`
-const url_param1 = `&forUsername=${channeluser}`
+// const url_param1 = `&forUsername=${channeluser}`
+const url_param1 = `&id=${channeluser}`
 const url_param2 = `&key=${API_KEY}`
 
 let videoList = []
@@ -23,10 +24,11 @@ function setURL() {
 
 async function getPlaylistId(){
   const url = setURL()
+  console.log(url)
   if (url) {
     const response = await axios.get(url)
-    // console.log(JSON.stringify(response.data,null,2))
-    return getPlaylistItems(response.data)
+    console.log(JSON.stringify(response.data,null,2))
+    // return getPlaylistItems(response.data)
   } else {
     return 'No channel name was provided. Please give a channel name. Check the "About" tab.'
   }
