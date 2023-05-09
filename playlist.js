@@ -27,11 +27,12 @@ async function retrievePlaylistItems() {
     playlist.forEach((record, index) => {
       // let item = JSON.stringify(record)
       // console.log(item)
-      console.log(index, record.contentDetails.videoId, record.snippet.publishedAt, record.snippet.title)
+      // console.log(index, record.contentDetails.videoId, record.snippet.publishedAt, record.snippet.title)
+      console.log(record.contentDetails.videoId)
     })
     // console.log(JSON.stringify(playlist,null,2))
     
-    console.log(`Number of Playlist items ${playlist.length}`)
+    // console.log(`Number of Playlist items ${playlist.length}`)
   } else {
     console.log("No playlist id given!")
   }
