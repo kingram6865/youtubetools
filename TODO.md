@@ -1,0 +1,4 @@
+- Retrieve all playlists for a channel
+- Retrieve all videos for a playlist
+- Create a table for shorts links
+- Retrieve /shorts and store in database

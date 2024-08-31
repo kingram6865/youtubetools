@@ -1,0 +1,1 @@
+CREATE TABLE youtube_shorts 
