@@ -2,7 +2,9 @@ const axios = require('axios')
 const mysql = require('mysql')
 require('dotenv').config()
 const fs = require('fs')
-
+const color = require('./utilities/consoleColors')
+const { pool, formatSQL, executeSQL } = require('./db/connect')
+let conn = pool('random_facts')
 
 const playlistid = (process.argv[2]) ? process.argv[2] : null
 const url_base="https://www.googleapis.com/youtube/v3/"
@@ -24,14 +26,42 @@ async function retrievePlaylistItems() {
       // playlist = [...playlist, response.data]
     }
 
-    playlist.forEach((record, index) => {
+    playlist.forEach(async (record, index) => {
       // let item = JSON.stringify(record)
       // console.log(item)
       // console.log(index, record.contentDetails.videoId, record.snippet.publishedAt, record.snippet.title)
-      console.log(record.contentDetails.videoId)
+      // console.log(record.snippet.title, record.contentDetails.videoId)
+      let isDupe = await checkForDupe(record.contentDetails.videoId)
+
+
+      videoData = {
+        // published: dateUtils.formatPublishedDate(record.snippet.publishedAt),
+        published: record.snippet.publishedAt,
+        channelId: record.snippet.channelId,
+        channelObjid: await channelExists(record.snippet.channelId),
+        channelTitle: record.snippet.channelTitle,
+        title: record.snippet.title,
+        description: record.snippet.description,
+        thumbnail: record.snippet.thumbnails,
+        keywords: record.snippet.tags,
+        // duration: formatDuration(record.contentDetails.duration),
+        duration: record.contentDetails.duration,
+        url: `https://youtube.com/watch?v=${record.contentDetails.videoId}`,
+        rewatch: 1,
+        videoid: record.contentDetails.videoId
+      }
+      // console.log(record.contentDetails.videoId, isDupe)
+      console.log(videoData)
+      // console.log(record)
+      
+        // .then(x => console.log('Line 56: ', x))
+
+      // if (!isDupe) {
+      //   console.log(`Saving ${record.contentDetails.videoId}`)
+      //   saveVideo({caption: record.snippet.title, videoid: record.contentDetails.videoId})
+      // }
     })
     // console.log(JSON.stringify(playlist,null,2))
-    
     // console.log(`Number of Playlist items ${playlist.length}`)
   } else {
     console.log("No playlist id given!")
@@ -52,4 +82,37 @@ async function videoList(channel) {
 
 }
 
+async function channelExists(channel) {
+  let SQL = "SELECT objid, channel_id, owner_name FROM youtube_channel_owners WHERE channel_id = ?"
+  SQL = formatSQL(SQL, [channel])
+  try {
+    const [rows, fields] = await executeSQL(conn, SQL);
+    // console.log(rows.channelExists)
+    return rows[0].objid
+  } catch(err) {
+    throw err;
+  }
+}
+
+
+async function saveVideo(data) {
+  let sql = `INSERT into youtube_downloads (caption, videoid) VALUES ('${data.caption}', '${data.videoid}')`
+  console.log(sql)
+}
+
+async function checkForDupe(id) {
+  let result
+  let sql=`SELECT count(*) AS dupe FROM youtube_downloads WHERE videoid = '${id}'`
+  try {
+    const [rows, fields] = await executeSQL(conn, sql)
+    return rows[0].dupe
+    // console.log(rows[0].dupe)
+  } catch(err) {
+    console.log(err)
+  }
+}
+
 retrievePlaylistItems()
+setTimeout(() => {
+  conn.end();
+}, 4000)
