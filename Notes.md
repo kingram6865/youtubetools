@@ -1,23 +1,21 @@
+# Youtube API
 
-/**
- * Take a video id or url as input, retrieve data for that video url
- * use it to retrieve channnel data
- * 
- */
+## Home Page
+https://developers.google.com/youtube/v3/docs
 
+## Youtube API Request and Response Examples
 
-url = `https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id=${videoid}&key=${API_KEY}`
+### Video Information HTTP request
 
-AIzaSyCAoH8rtrGYxlnpfkGlsUFH7-gTelUQnwM
+HTTP GET Request template
+https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id=[videoid]&key=[API_KEY]
 
-UC1xkO4uuHm-mckIjzS03fMA
-
-https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=UC1xkO4uuHm-mckIjzS03fMA&maxResults=50&order=date&key=AIzaSyCAoH8rtrGYxlnpfkGlsUFH7-gTelUQnwM
-
-## Video Data
+Example HTTP GET Request
 videoid: WYbteM7KLhI
-https://youtube.googleapis.com/youtube/v3/videos?part=contentDetails&part=snippet&id={WYbteM7KLhI}&key=[YOUR_API_KEY]'
+https://youtube.googleapis.com/youtube/v3/videos?part=contentDetails&part=snippet&id=WYbteM7KLhI&key=[YOUR_API_KEY]'
 
+Example Response Data
+```json
 {
   "kind": "youtube#videoListResponse",
   "etag": "0D0mvxA_d5Ei8iA39OaPmLTxOpE",
@@ -25,7 +23,7 @@ https://youtube.googleapis.com/youtube/v3/videos?part=contentDetails&part=snippe
     {
       "kind": "youtube#video",
       "etag": "vt-T8Sn6Y6Ick_XWKjbb5P7T6RI",
-      "id": "WYbteM7KLhI",
+      "id": "WYbteM7KLhI", 
       "snippet": {
         "publishedAt": "2020-11-21T05:38:47Z",
         "channelId": "UCy6kyFxaMqGtpE3pQTflK8A",
@@ -107,8 +105,24 @@ https://youtube.googleapis.com/youtube/v3/videos?part=contentDetails&part=snippe
     "resultsPerPage": 1
   }
 }
+```
 
 ## Channel Data
+
+https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=UC1xkO4uuHm-mckIjzS03fMA&maxResults=50&order=date&key=[YOUR_API_KEY]'
+
 channelId: UCy6kyFxaMqGtpE3pQTflK8A
-// https://youtube.googleapis.com/youtube/v3/channels?part=snippet,contentDetails,statistics&id={from video channelid}&key=[YOUR_API_KEY]
-https://youtube.googleapis.com/youtube/v3/channels?part=snippet,contentDetails,statistics&id=UCy6kyFxaMqGtpE3pQTflK8A&key=AIzaSyCAoH8rtrGYxlnpfkGlsUFH7-gTelUQnwM
+// https://youtube.googleapis.com/youtube/v3/channels?part=snippet,contentDetails,statistics&id=[from video channelid]&key=[YOUR_API_KEY]
+https://youtube.googleapis.com/youtube/v3/channels?part=snippet,contentDetails,statistics&id=UCy6kyFxaMqGtpE3pQTflK8A&key=[YOUR_API_KEY]'
+
+### Search for a channel by name
+
+`${url_base}search?part=snippet&q=${term}&maxResults=50&order=date&${url_api_key}`
+
+{
+  kind: 'youtube#searchListResponse',
+  etag: 'Agx5SsUaDWexhXdf53kFDdz9IXM',
+  nextPageToken: 'CDIQAA',
+  regionCode: 'US',
+  pageInfo: { totalResults: 177677, resultsPerPage: 50 },
+  items: []

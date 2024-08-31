@@ -1,0 +1,114 @@
+//
+//Response
+// {
+//   "kind": "youtube#playlistItemListResponse",
+//   "etag": "cJ88FDWnh5XwTeCZEoKPhdV6jUE",
+//   "nextPageToken": "EAAaBlBUOkNBVQ",
+//   "items": [
+//     {
+//       "kind": "youtube#playlistItem",
+//       "etag": "m0mrGlDsRU2IJLro7JMpQTU6TvE",
+//       "id": "VVVEYzlGVWZ5V3RoY2tKbWJTTC01ZklBLjhNeGY5NEs4WVcw",
+//       "contentDetails": {
+//         "videoId": "8Mxf94K8YW0",
+//         "videoPublishedAt": "2022-04-05T20:00:04Z"
+//       }
+//     },
+//     {
+//       "kind": "youtube#playlistItem",
+//       "etag": "ijFeNoJ5i4c2OJlIYITuZ2puZk4",
+//       "id": "VVVEYzlGVWZ5V3RoY2tKbWJTTC01ZklBLjZ5Mk5RWDJ5b3hn",
+//       "contentDetails": {
+//         "videoId": "6y2NQX2yoxg",
+//         "videoPublishedAt": "2022-03-30T20:00:03Z"
+//       }
+//     },
+//     {
+//       "kind": "youtube#playlistItem",
+//       "etag": "orrPsU6ZlqgxS6xkkOHVr0id_Fs",
+//       "id": "VVVEYzlGVWZ5V3RoY2tKbWJTTC01ZklBLjNiOEJsdzdMV3ZN",
+//       "contentDetails": {
+//         "videoId": "3b8Blw7LWvM",
+//         "videoPublishedAt": "2022-03-29T20:27:52Z"
+//       }
+//     },
+//     {
+//       "kind": "youtube#playlistItem",
+//       "etag": "Kzmb5MYdNpuXLEhF2_yLfCgD_i0",
+//       "id": "VVVEYzlGVWZ5V3RoY2tKbWJTTC01ZklBLnk1OUZQNWdwZDRn",
+//       "contentDetails": {
+//         "videoId": "y59FP5gpd4g",
+//         "videoPublishedAt": "2022-03-28T20:00:22Z"
+//       }
+//     },
+//     {
+//       "kind": "youtube#playlistItem",
+//       "etag": "pwUQ65oCcZcB-Fr5_4vUTk820AU",
+//       "id": "VVVEYzlGVWZ5V3RoY2tKbWJTTC01ZklBLk5tdmQ1dEdIRXBV",
+//       "contentDetails": {
+//         "videoId": "Nmvd5tGHEpU",
+//         "videoPublishedAt": "2022-03-24T21:00:17Z"
+//       }
+//     }
+//   ],
+//   "pageInfo": {
+//     "totalResults": 298,
+//     "resultsPerPage": 5
+//   }
+// }
+
+
+{
+  "kind": "youtube#playlistItem",
+  "etag": "iBxslKJUOEwaSZXK6CnfXz2DLuc",
+  "id": "VVVEYzlGVWZ5V3RoY2tKbWJTTC01ZklBLk9EcEh3Q25LZ3Nv",
+  "snippet": {
+    "publishedAt": "2020-08-10T20:37:29Z",
+    "channelId": "UCDc9FUfyWthckJmbSL-5fIA",
+    "title": "Tomi Lahren \"Men are trash\" | Manosphere Highlights",
+    "description": "Some Highlights of the responses made to Tomi Lahren's rant/ramble video. Check out the full videos of the content creators in the Manosphere and subscribe to them.  \n\nLinks to full video\n\nJaye de Black\nhttps://www.youtube.com/watch?v=a12YXHs1kG8\n\nBetter Bachelor\nhttps://www.youtube.com/watch?v=FPRLAU5qqB8\n\nKevin Samuels\nhttps://www.youtube.com/watch?v=nchQNpvzlcs&t=3565s\n\nCoach Greg Adams\nhttps://www.youtube.com/watch?v=Ddq-KLloskU\n\nDarius M\nhttps://www.youtube.com/watch?v=1Iy_HazfWU4\n\nAntonyspade\nhttps://www.youtube.com/watch?v=GMoCtTqMScQ\n\nEntrepreneurs in Cars\nhttps://www.youtube.com/watch?v=NUMMvvxlOxY\n\nSolotv84\nhttps://www.youtube.com/watch?v=yHbH-z-va64",
+    "thumbnails": {
+      "default": {
+        "url": "https://i.ytimg.com/vi/ODpHwCnKgso/default.jpg",
+        "width": 120,
+        "height": 90
+      },
+      "medium": {
+        "url": "https://i.ytimg.com/vi/ODpHwCnKgso/mqdefault.jpg",
+        "width": 320,
+        "height": 180
+      },
+      "high": {
+        "url": "https://i.ytimg.com/vi/ODpHwCnKgso/hqdefault.jpg",
+        "width": 480,
+        "height": 360
+      },
+      "standard": {
+        "url": "https://i.ytimg.com/vi/ODpHwCnKgso/sddefault.jpg",
+        "width": 640,
+        "height": 480
+      },
+      "maxres": {
+        "url": "https://i.ytimg.com/vi/ODpHwCnKgso/maxresdefault.jpg",
+        "width": 1280,
+        "height": 720
+      }
+    },
+    "channelTitle": "Manosphere Highlights Daily",
+    "playlistId": "UUDc9FUfyWthckJmbSL-5fIA",
+    "position": 297,
+    "resourceId": {
+      "kind": "youtube#video",
+      "videoId": "ODpHwCnKgso"
+    },
+    "videoOwnerChannelTitle": "Manosphere Highlights Daily",
+    "videoOwnerChannelId": "UCDc9FUfyWthckJmbSL-5fIA"
+  },
+  "contentDetails": {
+    "videoId": "ODpHwCnKgso",
+    "videoPublishedAt": "2020-08-10T20:37:29Z"
+  },
+  "status": {
+    "privacyStatus": "public"
+  }
+}
