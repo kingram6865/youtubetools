@@ -13,10 +13,10 @@ require('dotenv').config()
 const axios = require('axios')
 const mysql = require('mysql2')
 const DATABASE = {
-  host: process.env.HOST,
-  port: process.env.PORT,
+  host: process.env.DBHOST,
+  port: process.env.DBPORT,
   user: process.env.DBUSER,
-  password: process.env.PW,
+  password: process.env.DBPASS,
   database: process.env.DB
 }
 
@@ -73,10 +73,11 @@ async function getChannelID(channelname) {
   let SQL="SELECT objid, owner_name, channel_id FROM youtube_channel_owners WHERE lower(owner_name) LIKE lower(?)"
   const inserts = [`%${channelname}%`]
   SQL = mysql.format(SQL, inserts)
+  console.log(SQL)
   try {
     dbResults = await connection.promise().query(SQL)
   } catch (e) {
-    console.log(`(Line 79): ${e.sqlMessage}`)
+    console.log(`(Line 79): ${e.sqlMessage} ${e}`)
   } finally {
     connection.end()
   }
@@ -262,7 +263,7 @@ async function addData(data) {
       if (error) {
         console.log(error)
       }
-      console.log(`(Line 260): /${values[7]}/ New Row Objid: ${results.insertId} ${data.title} [${data.published}] ${data.duration}`)
+      console.log(`(Line 266): /Channel: ${values[7]}/ New Row Objid: ${results.insertId} ${data.title} [${data.published}] ${data.duration}`)
     })
 
     connection.end()
