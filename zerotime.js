@@ -32,8 +32,6 @@ async function executeSQL(sql) {
 
 async function getZeroTimes() {
   let sql = `SELECT objid, videoid FROM youtube_downloads WHERE play_length='00:00:00' AND status = 1`
-  // let sql = `SELECT count(*) FROM youtube_downloads WHERE play_length='00:00:00'`
-  // let sql = 'show tables'
   try {
     const [rows, fields] = await executeSQL(sql)
     return rows;
@@ -43,22 +41,21 @@ async function getZeroTimes() {
 }
 
 async function setPlayTime() {
+  let max = 100
   let source  = await getZeroTimes();
   let newTimes = {
     videoid: '', playLength: ''
   }
-
-  let max = 100
   
   if (source.length > 0) {
     let updateList = ''
-    console.log('Line 55:', source)
+    console.log('Line 52:', source)
     for (let i = 0; i < max; i++) {
       let sql, url, results
       if (source[i]) {
         url = `https://youtube.googleapis.com/youtube/v3/videos?&part=snippet&part=contentDetails&id=${source[i].videoid}&key=${process.env.API_KEY2}`
         results = await axios.get(url)
-        // console.log(`${color.brightGreen}[Line  61] Updating Play Length for: ${color.Reset}`, results.data.items[0].snippet.channelTitle, results.data.items[0].snippet.title)
+        // console.log(`${color.brightGreen}[Line  59] Updating Play Length for: ${color.Reset}`, results.data.items[0].snippet.channelTitle, results.data.items[0].snippet.title)
         console.log(`${color.brightGreen}Updating Play Length for: ${color.Reset}`, results.data.items[0].snippet.channelTitle, results.data.items[0].snippet.title)
       // }
 
@@ -66,40 +63,18 @@ async function setPlayTime() {
           let actualPlayTime, data
           if (results.data.items.length) {
             actualPlayTime = convertDuration(results.data.items[0].contentDetails.duration)
-            // data = [actualPlayTime, results.data.items[0].snippet.title, source[i].objid]
-            // sql = `UPDATE youtube_downloads SET play_length=?, caption = ? WHERE objid = ?`
             data = [actualPlayTime, source[i].objid]
             sql = `UPDATE youtube_downloads SET play_length=? WHERE objid = ?`
             // console.log(`[Line  72]: ${source[i].videoid} ${color.brightBlue}${results.data.items[0].contentDetails.duration}${color.Reset}/${color.brightGreen}${actualPlayTime}${color.Reset} ${results.data.items[0].snippet.title}`)
             console.log(`${source[i].videoid} ${color.brightBlue}${results.data.items[0].contentDetails.duration}${color.Reset} => ${color.brightGreen}${actualPlayTime}${color.Reset} ${results.data.items[0].snippet.title}`)
-          // } else {
-          //   actualPlayTime ='00:00:00'
-          //   data = [source[i].objid]
-          //   sql = `UPDATE youtube_downloads SET status = 0 WHERE objid = ?`
-          //   console.log(`${source[i].videoid} ${color.brightBlue}${results.data.items}${color.Reset}/${color.brightGreen}${actualPlayTime}${color.Reset} ${results.data.items}`)
           }
-          
-          
-
-          // sql = `UPDATE youtube_downloads SET play_length ='${actualPlayTime}', caption = '${results.data.items[0].snippet.title}' WHERE objid = ${source[i].objid}\n`
           
           sql = formatSQL(sql, data)
           // console.log('[Line  87]: ', sql, '\n-----------------------------------')
           console.log(sql, '\n-----------------------------------')
           updateList = updateList + `${source[i].objid} `
-        // } else {
-        //   if (source[i]) {
-        //     console.log(`${color.FgRed}${source[i].videoid} No data set status = 0${color.Reset}`)
-        //     sql = `UPDATE youtube_downloads SET status=0 WHERE objid = ${source[i].objid}`
-        //     console.log(sql, '\n')
-        //     updateList = updateList + `${source[i].objid} `
-        //   } else {
-
-        //   }
         }
       }
-
-      
 
       if (sql) {
         executeSQL(sql)
@@ -113,7 +88,4 @@ async function setPlayTime() {
   }, 2000)
 }
 
-// setPlayTime(process.argv[2])
-// getZeroTimes()
-//   .then(x => console.log(x.length))
 setPlayTime()
