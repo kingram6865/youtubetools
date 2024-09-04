@@ -58,7 +58,8 @@ async function setPlayTime() {
       if (source[i]) {
         url = `https://youtube.googleapis.com/youtube/v3/videos?&part=snippet&part=contentDetails&id=${source[i].videoid}&key=${process.env.API_KEY2}`
         results = await axios.get(url)
-        console.log(`${color.brightGreen}[Line  61] Updating Play Length for: ${color.Reset}`, results.data.items[0].snippet.channelTitle, results.data.items[0].snippet.title)
+        // console.log(`${color.brightGreen}[Line  61] Updating Play Length for: ${color.Reset}`, results.data.items[0].snippet.channelTitle, results.data.items[0].snippet.title)
+        console.log(`${color.brightGreen}Updating Play Length for: ${color.Reset}`, results.data.items[0].snippet.channelTitle, results.data.items[0].snippet.title)
       // }
 
         if (results.data && results.data.items.length > 0) {
@@ -69,7 +70,8 @@ async function setPlayTime() {
             // sql = `UPDATE youtube_downloads SET play_length=?, caption = ? WHERE objid = ?`
             data = [actualPlayTime, source[i].objid]
             sql = `UPDATE youtube_downloads SET play_length=? WHERE objid = ?`
-            console.log(`[Line  72]: ${source[i].videoid} ${color.brightBlue}${results.data.items[0].contentDetails.duration}${color.Reset}/${color.brightGreen}${actualPlayTime}${color.Reset} ${results.data.items[0].snippet.title}`)
+            // console.log(`[Line  72]: ${source[i].videoid} ${color.brightBlue}${results.data.items[0].contentDetails.duration}${color.Reset}/${color.brightGreen}${actualPlayTime}${color.Reset} ${results.data.items[0].snippet.title}`)
+            console.log(`${source[i].videoid} ${color.brightBlue}${results.data.items[0].contentDetails.duration}${color.Reset} => ${color.brightGreen}${actualPlayTime}${color.Reset} ${results.data.items[0].snippet.title}`)
           // } else {
           //   actualPlayTime ='00:00:00'
           //   data = [source[i].objid]
@@ -82,7 +84,8 @@ async function setPlayTime() {
           // sql = `UPDATE youtube_downloads SET play_length ='${actualPlayTime}', caption = '${results.data.items[0].snippet.title}' WHERE objid = ${source[i].objid}\n`
           
           sql = formatSQL(sql, data)
-          console.log('[Line  85]: ', sql, '\n-----------------------------------')
+          // console.log('[Line  87]: ', sql, '\n-----------------------------------')
+          console.log(sql, '\n-----------------------------------')
           updateList = updateList + `${source[i].objid} `
         // } else {
         //   if (source[i]) {
@@ -102,7 +105,7 @@ async function setPlayTime() {
         executeSQL(sql)
       }
     }
-    console.log(`[Line 100] Updated: `, updateList)
+    console.log(`Updated: `, updateList)
   }
 
   setTimeout(() => {
@@ -114,5 +117,3 @@ async function setPlayTime() {
 // getZeroTimes()
 //   .then(x => console.log(x.length))
 setPlayTime()
-
-
