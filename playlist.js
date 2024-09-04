@@ -36,16 +36,16 @@ async function retrievePlaylistItems() {
 
       videoData = {
         // published: dateUtils.formatPublishedDate(record.snippet.publishedAt),
-        published: record.snippet.publishedAt,
+        sequence: index,
+        upload_date: record.snippet.publishedAt,
         channelId: record.snippet.channelId,
-        channelObjid: await channelExists(record.snippet.channelId),
+        channel_owner_id: await channelExists(record.snippet.channelId),
         channelTitle: record.snippet.channelTitle,
         title: record.snippet.title,
         description: record.snippet.description,
         thumbnail: record.snippet.thumbnails,
         keywords: record.snippet.tags,
-        // duration: formatDuration(record.contentDetails.duration),
-        duration: record.contentDetails.duration,
+        play_length: record.contentDetails.duration,
         url: `https://youtube.com/watch?v=${record.contentDetails.videoId}`,
         rewatch: 1,
         videoid: record.contentDetails.videoId
@@ -96,7 +96,7 @@ async function channelExists(channel) {
 
 
 async function saveVideo(data) {
-  let sql = `INSERT into youtube_downloads (caption, videoid) VALUES ('${data.caption}', '${data.videoid}')`
+  let sql = `INSERT into youtube_downloads (channel_owner_id, upload_date, url, play_length, caption, description, sequence, videoid) VALUES ('${data.caption}', '${data.videoid}')`
   console.log(sql)
 }
 
@@ -106,7 +106,6 @@ async function checkForDupe(id) {
   try {
     const [rows, fields] = await executeSQL(conn, sql)
     return rows[0].dupe
-    // console.log(rows[0].dupe)
   } catch(err) {
     console.log(err)
   }
