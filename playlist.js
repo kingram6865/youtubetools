@@ -31,15 +31,15 @@ async function retrievePlaylistItems() {
       // console.log(item)
       // console.log(index, record.contentDetails.videoId, record.snippet.publishedAt, record.snippet.title)
       // console.log(record.snippet.title, record.contentDetails.videoId)
-      let isDupe = await checkForDupe(record.contentDetails.videoId)
-
-
+      let channelId = await channelExists(record.snippet.channelId)
+      let isDupe = await checkForDupeVideo(record.contentDetails.videoId, channelId)
+      
       videoData = {
         // published: dateUtils.formatPublishedDate(record.snippet.publishedAt),
         sequence: index,
         upload_date: record.snippet.publishedAt,
         channelId: record.snippet.channelId,
-        channel_owner_id: await channelExists(record.snippet.channelId),
+        channel_owner_id: channelId,
         channelTitle: record.snippet.channelTitle,
         title: record.snippet.title,
         description: record.snippet.description,
@@ -51,8 +51,8 @@ async function retrievePlaylistItems() {
         videoid: record.contentDetails.videoId
       }
       // console.log(record.contentDetails.videoId, isDupe)
-      console.log(videoData)
-      // console.log(record)
+      // console.log(videoData)
+      console.log(record)
       
         // .then(x => console.log('Line 56: ', x))
 
@@ -66,7 +66,6 @@ async function retrievePlaylistItems() {
   } else {
     console.log("No playlist id given!")
   }
-
 }
 
 async function videoList(channel) {
@@ -74,11 +73,7 @@ async function videoList(channel) {
    * return that list, and then feed that list to the videoDownloader, which will
    * parse the list and retrieve the data for any video not already in the database
   */
-
   const SQL = "SELECT videoid FROM youtube_downloads WHERE channel_owner_id = channel"
-
-
-
 
 }
 
@@ -94,15 +89,14 @@ async function channelExists(channel) {
   }
 }
 
-
 async function saveVideo(data) {
   let sql = `INSERT into youtube_downloads (channel_owner_id, upload_date, url, play_length, caption, description, sequence, videoid) VALUES ('${data.caption}', '${data.videoid}')`
   console.log(sql)
 }
 
-async function checkForDupe(id) {
+async function checkForDupeVideo(id, channel) {
   let result
-  let sql=`SELECT count(*) AS dupe FROM youtube_downloads WHERE videoid = '${id}'`
+  let sql=`SELECT count(*) AS dupe FROM youtube_downloads WHERE channel_owner_id = ${channel} AND videoid = '${id}'`
   try {
     const [rows, fields] = await executeSQL(conn, sql)
     return rows[0].dupe
