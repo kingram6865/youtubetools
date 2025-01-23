@@ -5,6 +5,18 @@ https://developers.google.com/youtube/v3/docs
 
 ## Youtube API Request and Response Examples
 
+### Create a .env with access keys and passwords
+
+API_KEY1=
+API_KEY2= (optional)
+
+DBHOST=
+DBPORT=
+DBPASS=
+DBUSER=
+DB=
+DBTEST=test (optional)
+
 ### Video Information HTTP request
 
 HTTP GET Request template
@@ -107,7 +119,7 @@ Example Response Data
 }
 ```
 
-## Channel Data
+### Channel Data
 
 https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=UC1xkO4uuHm-mckIjzS03fMA&maxResults=50&order=date&key=[YOUR_API_KEY]'
 
@@ -115,7 +127,7 @@ channelId: UCy6kyFxaMqGtpE3pQTflK8A
 // https://youtube.googleapis.com/youtube/v3/channels?part=snippet,contentDetails,statistics&id=[from video channelid]&key=[YOUR_API_KEY]
 https://youtube.googleapis.com/youtube/v3/channels?part=snippet,contentDetails,statistics&id=UCy6kyFxaMqGtpE3pQTflK8A&key=[YOUR_API_KEY]'
 
-### Search for a channel by name
+#### Search for a channel by name
 
 `${url_base}search?part=snippet&q=${term}&maxResults=50&order=date&${url_api_key}`
 
@@ -126,3 +138,181 @@ https://youtube.googleapis.com/youtube/v3/channels?part=snippet,contentDetails,s
   regionCode: 'US',
   pageInfo: { totalResults: 177677, resultsPerPage: 50 },
   items: []
+
+#### Channel Info
+https://youtube.googleapis.com/youtube/v3/channels?part=snippet%2CcontentDetails%2Cstatistics&id=UC_x5XG1OV2P6uZZ5FSM9Ttw&key=[YOUR_API_KEY]'
+
+##### Response object
+```json
+{
+  "kind": "youtube#channelListResponse",
+  "etag": etag,
+  "nextPageToken": string,
+  "prevPageToken": string,
+  "pageInfo": {
+    "totalResults": integer,
+    "resultsPerPage": integer
+  },
+  "items": [
+    channel Resource
+  ]
+}
+```
+
+##### Channel Resource
+```json
+{
+  "kind": "youtube#channel",
+  "etag": etag,
+  "id": string,
+  "snippet": {
+    "title": string,
+    "description": string,
+    "customUrl": string,
+    "publishedAt": datetime,
+    "thumbnails": {
+      (key): {
+        "url": string,
+        "width": unsigned integer,
+        "height": unsigned integer
+      }
+    },
+    "defaultLanguage": string,
+    "localized": {
+      "title": string,
+      "description": string
+    },
+    "country": string
+  },
+  "contentDetails": {
+    "relatedPlaylists": {
+      "likes": string,
+      "favorites": string,
+      "uploads": string
+    }
+  },
+  "statistics": {
+    "viewCount": unsigned long,
+    "subscriberCount": unsigned long,  // this value is rounded to three significant figures
+    "hiddenSubscriberCount": boolean,
+    "videoCount": unsigned long
+  },
+  "topicDetails": {
+    "topicIds": [
+      string
+    ],
+    "topicCategories": [
+      string
+    ]
+  },
+  "status": {
+    "privacyStatus": string,
+    "isLinked": boolean,
+    "longUploadsStatus": string,
+    "madeForKids": boolean,
+    "selfDeclaredMadeForKids": boolean
+  },
+  "brandingSettings": {
+    "channel": {
+      "title": string,
+      "description": string,
+      "keywords": string,
+      "trackingAnalyticsAccountId": string,
+      "unsubscribedTrailer": string,
+      "defaultLanguage": string,
+      "country": string
+    },
+    "watch": {
+      "textColor": string,
+      "backgroundColor": string,
+      "featuredPlaylistId": string
+    }
+  },
+  "auditDetails": {
+    "overallGoodStanding": boolean,
+    "communityGuidelinesGoodStanding": boolean,
+    "copyrightStrikesGoodStanding": boolean,
+    "contentIdClaimsGoodStanding": boolean
+  },
+  "contentOwnerDetails": {
+    "contentOwner": string,
+    "timeLinked": datetime
+  },
+  "localizations": {
+    (key): {
+      "title": string,
+      "description": string
+    }
+  }
+}
+```
+
+#### List Playlists for a channel
+https://youtube.googleapis.com/youtube/v3/playlists?part=snippet%2CcontentDetails&channelId=UC_x5XG1OV2P6uZZ5FSM9Ttw&maxResults=25&key=[YOUR_API_KEY]'
+
+##### Response object
+```json
+{
+  "kind": "youtube#playlistListResponse",
+  "etag": etag,
+  "nextPageToken": string,
+  "prevPageToken": string,
+  "pageInfo": {
+    "totalResults": integer,
+    "resultsPerPage": integer
+  },
+  "items": [
+    playlist Resource
+  ]
+}
+```
+
+#### Playlists resource
+
+```json
+{
+  "kind": "youtube#playlist",
+  "etag": etag,
+  "id": string,
+  "snippet": {
+    "publishedAt": datetime,
+    "channelId": string,
+    "title": string,
+    "description": string,
+    "thumbnails": {
+      (key): {
+        "url": string,
+        "width": unsigned integer,
+        "height": unsigned integer
+      }
+    },
+    "channelTitle": string,
+    "defaultLanguage": string,
+    "localized": {
+      "title": string,
+      "description": string
+    }
+  },
+  "status": {
+    "privacyStatus": string,
+    "podcastStatus": enum
+  },
+  "contentDetails": {
+    "itemCount": unsigned integer
+  },
+  "player": {
+    "embedHtml": string
+  },
+  "localizations": {
+    (key): {
+      "title": string,
+      "description": string
+    }
+  }
+}
+```
+
+### Playlist items
+https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=[playlist id]&key=[YOUR_API_KEY]' \
+
+https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet%2C%20contentDetails%2C%20id%2C%20status&playlistId=PLLhe2t7JgNQrcmCiRc0YxFi33Yi-leIuD&key=[YOUR_API_KEY]' \
