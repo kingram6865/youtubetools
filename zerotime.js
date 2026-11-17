@@ -4,6 +4,7 @@ const axios = require('axios')
 const API_KEY = process.env.API_KEY2
 const { pool, formatSQL } = require('./db/connect')
 let conn = pool('random_facts')
+// let conn = pool('test')
 
 function convertDuration(input) {
   let time = input.replace('PT', '')
@@ -40,6 +41,17 @@ async function getZeroTimes() {
   }
 }
 
+async function disableVideo(id) {
+  let sql = `UPDATE youtube_downloads SET status = 0, notes =' No data. Video removed by owner or youtube.' WHERE videoid = '${id}'`
+  try {
+    const [rows, fields] = await executeSQL(sql)
+    return rows
+  } catch(err) {
+    console.log(err)
+  }
+}
+
+
 async function setPlayTime() {
   let max = 100
   let source  = await getZeroTimes();
@@ -49,24 +61,38 @@ async function setPlayTime() {
   
   if (source.length > 0) {
     let updateList = ''
-    console.log('Line 52:', source)
+    console.log(`Updating:\n`, source)
     for (let i = 0; i < max; i++) {
-      let sql, url, results
+      let sql, url, results, duration, channelTitle, title, notes
       if (source[i]) {
         url = `https://youtube.googleapis.com/youtube/v3/videos?&part=snippet&part=contentDetails&id=${source[i].videoid}&key=${process.env.API_KEY2}`
         results = await axios.get(url)
-        // console.log(`${color.brightGreen}[Line  59] Updating Play Length for: ${color.Reset}`, results.data.items[0].snippet.channelTitle, results.data.items[0].snippet.title)
-        console.log(`${color.brightGreen}Updating Play Length for: ${color.Reset}`, results.data.items[0].snippet.channelTitle, results.data.items[0].snippet.title)
-      // }
+
+        if (results.data.items < 1) {
+          let disabled = await disableVideo(source[i].videoid)
+          console.log(`Note!!! ${color.brightRed}${source[i].videoid}${color.Reset} appears to be no longer available. Setting status to 0. Rows Changed: ${disabled.changedRows}`)
+        } else {
+          channelTitle = (results.data.items[0]) ? results.data.items[0].snippet.channelTitle : ""
+          title = (results.data.items[0]) ? results.data.items[0].snippet.title : ""
+          console.log(`${color.brightGreen}Updating Play Length for:${color.Reset} [${channelTitle}] ${title}`)
+        }
 
         if (results.data && results.data.items.length > 0) {
           let actualPlayTime, data
           if (results.data.items.length) {
-            actualPlayTime = convertDuration(results.data.items[0].contentDetails.duration)
-            data = [actualPlayTime, source[i].objid]
-            sql = `UPDATE youtube_downloads SET play_length=? WHERE objid = ?`
-            // console.log(`[Line  72]: ${source[i].videoid} ${color.brightBlue}${results.data.items[0].contentDetails.duration}${color.Reset}/${color.brightGreen}${actualPlayTime}${color.Reset} ${results.data.items[0].snippet.title}`)
-            console.log(`${source[i].videoid} ${color.brightBlue}${results.data.items[0].contentDetails.duration}${color.Reset} => ${color.brightGreen}${actualPlayTime}${color.Reset} ${results.data.items[0].snippet.title}`)
+            duration = (results.data.items[0].contentDetails.duration) ? convertDuration(results.data.items[0].contentDetails.duration) : "No duration"
+
+            if (parseInt(duration)) {
+              actualPlayTime = duration
+              notes = "Video time confirmed"
+            } else {
+              actualPlayTime = "00"
+              notes = "Video time still pending"
+            }
+            data = [actualPlayTime, notes, source[i].objid]
+            sql = `UPDATE youtube_downloads SET play_length=?, notes=? WHERE objid = ?`
+            // console.log(`[Line  72]: ${source[i].videoid} ${color.brightBlue}${duration}${color.Reset}/${color.brightGreen}${actualPlayTime}${color.Reset} ${results.data.items[0].snippet.title}`)
+            console.log(`${source[i].videoid} ${color.brightBlue}${duration}${color.Reset} => ${color.brightGreen}${actualPlayTime}${color.Reset} ${results.data.items[0].snippet.title}`)
           }
           
           sql = formatSQL(sql, data)
