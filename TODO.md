@@ -2,3 +2,12 @@
 - Retrieve all videos for a playlist
 - Create a table for shorts links
 - Retrieve /shorts and store in database
+- New db table channel_playlists
+  - playlist_id (items[i].id)
+  - playlist_name (items[i].snippet.title)
+  - description (items[i].snippet.description)
+  - thumbnails (JSON.stringify(items[i].snippet.thumbnails))
+  - channel_name (items[i].snippet.channelTitle)
+  - playlist_status (JSON.stringify(items[i].status))
+  - playlist_item_count items[i].status.contentDetails.itemCount
+
