@@ -19,12 +19,14 @@ DBTEST=test (optional)
 
 ### Video Information HTTP request
 
+Youtube Link: https://www.youtube.com/watch?v=[videoid]
+
 HTTP GET Request template
 https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id=[videoid]&key=[API_KEY]
 
 Example HTTP GET Request
 videoid: WYbteM7KLhI
-https://youtube.googleapis.com/youtube/v3/videos?part=contentDetails&part=snippet&id=WYbteM7KLhI&key=[YOUR_API_KEY]'
+https://youtube.googleapis.com/youtube/v3/videos?part=contentDetails&part=snippet&id=WYbteM7KLhI&key=[API_KEY]'
 
 Example Response Data
 ```json
@@ -121,11 +123,11 @@ Example Response Data
 
 ### Channel Data
 
-https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=UC1xkO4uuHm-mckIjzS03fMA&maxResults=50&order=date&key=[YOUR_API_KEY]'
+https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=UC1xkO4uuHm-mckIjzS03fMA&maxResults=50&order=date&key=[API_KEY]'
 
 channelId: UCy6kyFxaMqGtpE3pQTflK8A
-// https://youtube.googleapis.com/youtube/v3/channels?part=snippet,contentDetails,statistics&id=[from video channelid]&key=[YOUR_API_KEY]
-https://youtube.googleapis.com/youtube/v3/channels?part=snippet,contentDetails,statistics&id=UCy6kyFxaMqGtpE3pQTflK8A&key=[YOUR_API_KEY]'
+// https://youtube.googleapis.com/youtube/v3/channels?part=snippet,contentDetails,statistics&id=[from video channelid]&key=[API_KEY]
+https://youtube.googleapis.com/youtube/v3/channels?part=snippet,contentDetails,statistics&id=UCy6kyFxaMqGtpE3pQTflK8A&key=[API_KEY]'
 
 #### Search for a channel by name
 
@@ -140,7 +142,7 @@ https://youtube.googleapis.com/youtube/v3/channels?part=snippet,contentDetails,s
   items: []
 
 #### Channel Info
-https://youtube.googleapis.com/youtube/v3/channels?part=snippet%2CcontentDetails%2Cstatistics&id=UC_x5XG1OV2P6uZZ5FSM9Ttw&key=[YOUR_API_KEY]'
+https://youtube.googleapis.com/youtube/v3/channels?part=snippet%2CcontentDetails%2Cstatistics&id=UC_x5XG1OV2P6uZZ5FSM9Ttw&key=[API_KEY]'
 
 ##### Response object
 ```json
@@ -248,7 +250,7 @@ https://youtube.googleapis.com/youtube/v3/channels?part=snippet%2CcontentDetails
 ```
 
 #### List Playlists for a channel
-https://youtube.googleapis.com/youtube/v3/playlists?part=snippet%2CcontentDetails&channelId=UC_x5XG1OV2P6uZZ5FSM9Ttw&maxResults=25&key=[YOUR_API_KEY]'
+https://youtube.googleapis.com/youtube/v3/playlists?part=snippet%2CcontentDetails&channelId=UC_x5XG1OV2P6uZZ5FSM9Ttw&maxResults=25&key=[API_KEY]'
 
 ##### Response object
 ```json
@@ -312,7 +314,67 @@ https://youtube.googleapis.com/youtube/v3/playlists?part=snippet%2CcontentDetail
 }
 ```
 
-### Playlist items
-https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=[playlist id]&key=[YOUR_API_KEY]' \
+#### Playlist items
+https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=[playlist id]&key=[API_KEY]' \
 
-https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet%2C%20contentDetails%2C%20id%2C%20status&playlistId=PLLhe2t7JgNQrcmCiRc0YxFi33Yi-leIuD&key=[YOUR_API_KEY]' \
+https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet%2C%20contentDetails%2C%20id%2C%20status&playlistId=PLLhe2t7JgNQrcmCiRc0YxFi33Yi-leIuD&key=[API_KEY]' \
+
+##### Playlist item response object
+
+```json
+{
+  "kind": "youtube#playlistItemListResponse",
+  "etag": etag,
+  "nextPageToken": string,
+  "prevPageToken": string,
+  "pageInfo": {
+    "totalResults": integer,
+    "resultsPerPage": integer
+  },
+  "items": [
+    playlistItem Resource
+  ]
+}
+```
+
+##### PlaylistItem Resource
+
+```json
+{
+  "kind": "youtube#playlistItem",
+  "etag": etag,
+  "id": string,
+  "snippet": {
+    "publishedAt": datetime,
+    "channelId": string,
+    "title": string,
+    "description": string,
+    "thumbnails": {
+      (key): {
+        "url": string,
+        "width": unsigned integer,
+        "height": unsigned integer
+      }
+    },
+    "channelTitle": string,
+    "videoOwnerChannelTitle": string,
+    "videoOwnerChannelId": string,
+    "playlistId": string,
+    "position": unsigned integer,
+    "resourceId": {
+      "kind": string,
+      "videoId": string,
+    }
+  },
+  "contentDetails": {
+    "videoId": string,
+    "startAt": string,
+    "endAt": string,
+    "note": string,
+    "videoPublishedAt": datetime
+  },
+  "status": {
+    "privacyStatus": string
+  }
+}
+```
