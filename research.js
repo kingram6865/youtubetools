@@ -2,12 +2,13 @@
  * Author: Ken Ingram
  * Date: 2021 02 04 1000
  * Purpose: Update youtube link database according to already saved channels
- * 
+ *
  * Notes: The final version of this script may be renamed to channelUpdater.js
  * TODO: Use flags to (show) or (store) the retrieved data.
  * TODO: Check the retrieved videoid and if it is already in the database, skip it for add.
  * TODO: Turn this script into object code.
  */
+const color = require('./utilities/consoleColors')
 
 require('dotenv').config()
 const axios = require('axios')
@@ -36,7 +37,7 @@ function formatDuration(input){
   /**
    * The duration data in the video data is in ISO 8601 format (https://www.w3.org/TR/NOTE-datetime)
    * E.g.: PT11M58S
-   * 
+   *
    * This function converts it to a string of digits
    */
 
@@ -52,7 +53,7 @@ function formatDuration(input){
 }
 
 function setURL(type, videoid=null, channelid=null, nextpage=null) {
-  const API_KEY = process.env.API_KEY1
+  const API_KEY = process.env.API_KEY2
   const url_base="https://www.googleapis.com/youtube/v3/"
   const url_api_key = `key=${API_KEY}`
 
@@ -73,7 +74,7 @@ async function getChannelID(channelname) {
   let SQL="SELECT objid, owner_name, channel_id FROM youtube_channel_owners WHERE lower(owner_name) LIKE lower(?)"
   const inserts = [`%${channelname}%`]
   SQL = mysql.format(SQL, inserts)
-  console.log(SQL)
+  // console.log(SQL)
   try {
     dbResults = await connection.promise().query(SQL)
   } catch (e) {
@@ -119,11 +120,11 @@ async function getChannelUploadsList(channel, channel_dbid, pages=null) {
    * returned in this API call. We want to have the option is seeing farther back
    * in the channel history, or limit the view to more recent uploads so
    * this section needs a while loop to make a new call to the subsequent pages
-   * 
+   *
    */
 
   if (pages === '*') {
-    maxpages = Math.ceil(response.data.pageInfo.totalResults/50)  
+    maxpages = Math.ceil(response.data.pageInfo.totalResults/50)
   } else {
     maxpages = pages
   }
@@ -156,13 +157,13 @@ async function getChannelUploadsList(channel, channel_dbid, pages=null) {
           published: item.snippet.publishedAt,
           channel_owner: channel_dbid
         })
-      }      
+      }
 
       if (Object.keys(item.id).includes('publishedAt')){
         playLists.push()
       }
-    }) 
-    i++    
+    })
+    i++
   }
 
   // console.log(`(Line 151): ${printObj(playLists)}`)
@@ -173,48 +174,61 @@ async function getChannelUploadsList(channel, channel_dbid, pages=null) {
 
 async function retrieveData(data) {
   /**
-   * Input is an array of objects containing 
+   * Input is an array of objects containing
    * {
    *  videoid: string
    *  title: string
    *  published: date string
    *  channel_owner: integer
    * }
-   * 
+   *
    * This function loops through that array
    * retrieves the data from the API for that videoid, forms an object, stores that object
    * data in an array and returns that array.
-   * 
+   *
    * API URL: https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id=${videoid}&key=${API_KEY}
-   * 
+   *
    */
-  
+  // console.log(`${data.length}`)
+  // console.log(data)
   const videoDataURL = 'videos?part=snippet%2CcontentDetails%2Cstatistics'
   let record = {}
   const objectList = []
-  
+  //console.log("=========== Begin  ============")
+
   for (let i = 0; i < data.length; i++) {
     try {
-      let url = setURL('video', data[i].videoid, null, null)
-      let response = await axios.get(url)
-      // console.log(response.data.items[0].snippet.title, x.channel_owner, response.data.items[0].contentDetails.duration)
+      let video_url = setURL('video', data[i].videoid, null, null)
+      let response = await axios.get(video_url)
+      //console.log(response.data.items[0].snippet, data[i].channel_owner, response.data.items[0].contentDetails)
 
+      let published = new Date(response.data.items[0].snippet.publishedAt).toLocaleString().replace(',','')
+      let title = response.data.items[0].snippet.title
+      let description = response.data.items[0].snippet.description
+      let thumbnail = response.data.items[0].snippet.thumbnails.default.url
+      let duration = (response.data.items[0].contentDetails.duration) ? formatDuration(response.data.items[0].contentDetails.duration) : formatDuration("PT0M")
+      let channel_owner_id = data[i].channel_owner
+
+      //console.log("Line 211: ", record)
       record = {
         tags: null,
         published: new Date(response.data.items[0].snippet.publishedAt).toLocaleString().replace(',',''),
         title: response.data.items[0].snippet.title,
         description: response.data.items[0].snippet.description,
         thumbnail: response.data.items[0].snippet.thumbnails.default.url,
-        duration: formatDuration(response.data.items[0].contentDetails.duration),
         url: `https://www.youtube.com/watch?v=${response.data.items[0].id}`,
+        duration,
         channel_owner_id: data[i].channel_owner
-      }    
+      }
+
+      //console.log("Line 223: ", record)
     } catch (e) {
-      console.log(`(Line 209): ${JSON.stringify(e, null, 2)}`)
+      console.log(`Line 225: ${JSON.stringify(e, null, 2)}`)
     } finally {
       objectList.push(record)
     }
   }
+  //console.log("=========== End  ============")
 
   return objectList
 }
@@ -223,7 +237,7 @@ async function addData(data) {
   /**
    * Takes an array of objects as input and for each element converts it to
    * database ready values for insert into the table.
-   * 
+   *
    * object format {
    *  tags: string,         => keywords
    *  published: date,           => upload_date
@@ -234,8 +248,8 @@ async function addData(data) {
    *  url: string,              => url
    *  channel_owner: integer  => channel_owner_id
    * }
-   * 
-   * 
+   *
+   *
    */
 
   // try {
@@ -245,9 +259,10 @@ async function addData(data) {
      * Then we close the connection when we're done inserting.
      */
     // const columns = "keywords, channel_owner_id, play_length, url, title, description, upload_date"
+
     const columns = "keywords, upload_date, caption, description, thumbnail, play_length, url, channel_owner_id, status"
     const values = [
-      (data.tags) ? JSON.stringify(data.tags).replace(/"/g,'').replace(/\[|\]/g,'') : null, 
+      (data.tags) ? JSON.stringify(data.tags).replace(/"/g,'').replace(/\[|\]/g,'') : null,
       data.published,
       `${data.title}${appendText}`,
       data.description,
@@ -259,11 +274,12 @@ async function addData(data) {
     ]
 
     SQL = `INSERT INTO youtube_downloads (${columns}) VALUES (?,date_format(str_to_date(?,'%m/%d/%Y %r'), '%Y-%m-%d %r'),?,?,?,?,?,?,?)`
+
     connection.query(SQL, values, function(error, results, fields) {
       if (error) {
         console.log(error)
       }
-      console.log(`(Line 266): /Channel: ${values[7]}/ New Row Objid: ${results.insertId} ${data.title} [${data.published}] ${data.duration}`)
+      console.log(`(Line 279): /Channel: ${values[7]}/ New Row Objid: ${results.insertId} ${data.title} [${data.published}] ${data.duration}`)
     })
 
     connection.end()
@@ -272,91 +288,69 @@ async function addData(data) {
 async function dataCheck(data) {
   /**
    * Are these items already in the database?
-   * 
+   *
    * Instead of making multiple database calls for each item, grab all of them
    * and see if there are any not in the database. Whichever videoid's are not
    * in the database are saved to ann array, so they can be passed to the function
    * that retrievs their data from the API.
-   * 
+   *
    * dataCheck() sends back an array of id's which is a list of video data we want to download
-   * 
+   *
    */
   const connection = mysql.createConnection(DATABASE)
-  const API_KEY = process.env.API_KEY1
-  let results = []
-  let leftovers = []
-  let test = []
-
-  const videos = data.map((x) => {
-    // console.log(`dataCheck() line 285: ${JSON.stringify(x, null, 2)}`)
-    return `'${x.videoid}'`
-  }).join(",")
-
-  // console.log(`(Line 289): ${videos}`)
-
-  SQL = `select videoid FROM youtube_downloads WHERE videoid IN (${videos})`
-  // console.log(`Line 292: ${SQL}`)
   try {
-    results = await connection.promise().query(SQL)
+    if (!data || data.length === 0) {
+      return []
+    }
 
-    // results[0].forEach((x) => {
-    //   // console.log(`https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id=${x.videoid}&key=${API_KEY}`)
-    // })
-  } catch (e) {
-    console.log(e)
+    const videoids = data.map(x => x.videoid)
+    const placeholders = videoids.map(() => '?').join(',')
+    const SQL = `SELECT videoid FROM youtube_downloads WHERE videoid IN (${placeholders})`
+    const [results] = await connection.promise().query(SQL, videoids)
+    const existingVideoids = new Set(results.map(row => row.videoid))
+    const leftovers = data.filter(video => !existingVideoids.has(video.videoid))
+
+    return leftovers;
+  } catch (err) {
+    console.error('Error in dataCheck:', err);
+    return [];
   } finally {
     connection.end()
   }
-
-  // console.log(`\nLine 305: ${results[0].length}\n`)
-
-  if (results[0].length === 0) {
-    /** Edit note 2021 02 10 1124
-     * This branch was producing an array of 'videoid' strings when all of 
-     * the checked values were not in the database. This was causing the 
-     * addData() to break because it expects the array elements to be objects 
-     * and not string values.
-     * */ 
-    data.forEach((x) => {
-      leftovers.push(x)
-    })
-  } else if (results[0].length > 0 && results[0].length <= videos.length) {
-    test = results[0].map((x) => {
-      return `'${x.videoid}'`
-    }).join(",")
-
-    // console.log(`(Line 280): ${JSON.stringify(test, null, 2)}`)
-
-    data.forEach((x) => {
-      if (!(test.includes(x.videoid))) {
-        // console.log(`(Line 326): ${x.videoid} ${x.title} is NOT in the database`)
-        leftovers.push(x)
-      }
-    })
-  }
-
-  // console.log(`(Line 332): ${JSON.stringify(leftovers, null, 2)}`)
-  return leftovers
 }
 
 async function updateChannel() {
   const result = await getChannelID(search_term)
   result.forEach(x => {
-    console.log(x.owner_name, x.channel_id)
+    console.log(`\n[===== ${color.brightBlue}${x.owner_name} [${x.channel_id}]${color.Reset} =====>]`)
   })
   const channelData = await getChannelInfo(result[0].channel_id, result[0].objid)
   const videoData = await getChannelUploadsList(result[0].channel_id, result[0].objid, num_pages)
-  
-  // console.log(`(Line 241): ${JSON.stringify(videoData, null, 2)}`)
+
+  if (!videoData || videoData.length === 0) {
+    console.log(`No videos found for channel ${result[0].owner_name}`)
+    return
+  }
+
   videoData.forEach((x) => {
     let date = new Date(x.published).toLocaleString().replace(",","")
     //console.log(`(Line 344):${x.channel_owner} -- (${date}) [${x.videoid}] ${x.title}`)
   })
 
-  // Pass the array of objects into the check function 
+  // Pass the array of objects into the check function
   let test = await dataCheck(videoData)
-  // console.log(test)
+  //console.log(test)
   const finalresult = await retrieveData(test)
+
+  if (finalresult.length) {
+    if (finalresult.length === 1) {
+      console.log(`${color.brightGreen}There is ${color.Reset}${color.brightYellow}${finalresult.length}${color.Reset}${color.brightGreen} new video to archive${color.Reset}`)
+    } else {
+      console.log(`${color.brightGreen}There are ${color.Reset}${color.brightYellow}${finalresult.length}${color.Reset}${color.brightGreen} new videos to archive${color.Reset}`)
+    }
+  } else {
+    console.log(`No new videos for this channel on ${new Date().toLocaleString().replace(",","")}`)
+  }
 
   console.log('\n')
   finalresult.forEach((x) => {
